@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 
 using UnityEditor;
@@ -22,7 +21,7 @@ namespace BeastBlood.Editor.AssetGraph
     /// <para>YAML 텍스트 에셋에서 <c>guid: </c>/<c>GUID: </c> 뒤의 32자리 GUID를 뽑아 선을 만든다.
     /// <c>AssetDatabase.GetDependencies</c>는 Addressables <c>m_AssetGUID</c> 문자열 필드를 놓치므로 쓰지 않는다.</para>
     /// <para>코드에서 씬 이름 문자열로 여는 경우는 직렬화 참조가 없으므로, 빌드 설정 씬 이름이
-    /// <c>01_Scripts</c>의 문자열 리터럴로 등장하면 "코드 경유(추정)" 선으로 따로 기록한다.</para>
+    /// <c>Assets/</c> 아래(서드파티 제외) C# 문자열 리터럴로 등장하면 "코드 경유(추정)" 선으로 따로 기록한다.</para>
     /// <para>전체 갱신은 수십 초 걸리므로 파일 I/O를 스레드 풀에서 돌린다(<see cref="StartBuild"/>).
     /// 이후 변경분은 <see cref="BBAssetRefPostprocessor"/>가 <see cref="ApplyChanges"/>로 파일 단위 반영한다.</para>
     /// <para>결과는 <c>Library/BBAssetGraph/RefIndex.json</c>(SVN 비대상)에 캐시한다.</para>
@@ -33,7 +32,6 @@ namespace BeastBlood.Editor.AssetGraph
 
         private const int CACHE_VERSION = 1;
         private const string CACHE_PATH = "Library/BBAssetGraph/RefIndex.json";
-        private const string CODE_ROOT = "Assets/01_Scripts";
         private const string SETTINGS_ROOT = "ProjectSettings";
         private const string BUILTIN_GUID_PREFIX = "0000000000000000";
 
@@ -129,7 +127,7 @@ namespace BeastBlood.Editor.AssetGraph
 
             IsBuilding = true;
             LastBuildError = null;
-            BuildAsync(full).Forget();
+            _ = BuildAsync(full);
             return true;
         }
 
@@ -176,8 +174,7 @@ namespace BeastBlood.Editor.AssetGraph
                         ResolvePackageGuids(GuidToPath, Entries[path].Refs);
                     }
                 }
-                else if (path.StartsWith(CODE_ROOT + "/", StringComparison.Ordinal)
-                         && path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) && File.Exists(fullPath))
+                else if (path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) && !IsThirdParty(path) && File.Exists(fullPath))
                 {
                     sceneNameToGuid ??= MapSceneNames(EditorBuildSettings.scenes.Select(scene => scene.path), GuidToPath);
 
@@ -365,7 +362,7 @@ namespace BeastBlood.Editor.AssetGraph
         /// <summary>
         /// 메인 스레드에서 입력을 모으고, 파일 I/O는 스레드 풀에서 돌린 뒤, 결과 반영은 다시 메인 스레드에서 한다.
         /// </summary>
-        private async UniTaskVoid BuildAsync(bool full)
+        private async Task BuildAsync(bool full)
         {
             var stopwatch = Stopwatch.StartNew();
             try
@@ -376,7 +373,8 @@ namespace BeastBlood.Editor.AssetGraph
                 var buildScenePaths = EditorBuildSettings.scenes.Select(scene => scene.path).ToList();
                 var oldEntries = full ? new Dictionary<string, BBAssetRefEntry>() : Entries;
 
-                var result = await UniTask.RunOnThreadPool(() => ScanAll(projectRoot, dataPath, buildScenePaths, oldEntries));
+                // 에디터 메인 스레드의 UnitySynchronizationContext 덕분에 await 뒤는 메인 스레드로 돌아온다
+                var result = await Task.Run(() => ScanAll(projectRoot, dataPath, buildScenePaths, oldEntries));
                 var scanMs = stopwatch.ElapsedMilliseconds;
 
                 // 여기부터 메인 스레드
@@ -473,15 +471,17 @@ namespace BeastBlood.Editor.AssetGraph
             var guidToPathMap = new Dictionary<string, string>(guidToPath);
             var sceneNameToGuid = MapSceneNames(buildScenePaths, guidToPathMap);
             var codeRefs = new ConcurrentDictionary<string, List<string>>();
-            var codeRootFull = Path.Combine(projectRoot, CODE_ROOT);
-            if (Directory.Exists(codeRootFull) && sceneNameToGuid.Count > 0)
+            if (sceneNameToGuid.Count > 0)
             {
-                Parallel.ForEach(Directory.GetFiles(codeRootFull, "*.cs", SearchOption.AllDirectories), file =>
+                Parallel.ForEach(Directory.GetFiles(dataPath, "*.cs", SearchOption.AllDirectories), file =>
                 {
+                    var assetPath = ToAssetPath(projectRoot, file);
+                    if (IsThirdParty(assetPath)) return;
+
                     var hits = ScanCode(file, sceneNameToGuid);
                     if (hits != null)
                     {
-                        codeRefs[ToAssetPath(projectRoot, file)] = hits;
+                        codeRefs[assetPath] = hits;
                     }
                 });
             }

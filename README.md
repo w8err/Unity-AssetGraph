@@ -1,6 +1,6 @@
 # AssetGraph — 에셋 참조 인덱스
 
-**v1.0**
+**v1.1** — UniTask 의존 제거, 코드 스캔 범위를 `Assets/` 전체로, MCP 툴은 define으로 켜기
 
 언리얼 Reference Viewer / Asset Registry의 참조 정보에 해당하는 도구. 유니티에는 "누가 이 에셋을 쓰나"(역참조)를 답하는 기본 기능이 없어서 만들었다.
 
@@ -9,8 +9,9 @@
 `Editor/AssetGraph` 폴더를 프로젝트의 `Assets/` 아래 아무 곳에나 복사한다. 폴더 이름에 `Editor`가 들어 있어야
 유니티가 에디터 전용 스크립트로 인식한다.
 
-- 사람용 에디터 창(`BBAssetGraphWindow`)은 별도 의존성 없이 바로 동작한다.
-- AI용 MCP 커스텀 툴(`bb_asset_graph`, `BBAssetGraphMcpTool.cs`)은 [MCP for Unity](https://github.com/CoplayDev/unity-mcp) 브리지가 프로젝트에 설치돼 있어야 컴파일된다. 그 브리지가 없으면 이 파일만 빼고 써도 에디터 창 기능은 그대로 동작한다.
+- 의존성은 `com.unity.nuget.newtonsoft-json` 하나다. 보통 다른 Unity 패키지를 통해 이미 들어와 있고, 없으면 Package Manager에서 추가한다.
+- 사람용 에디터 창(`BBAssetGraphWindow`)은 그 외 의존성 없이 바로 동작한다. Unity 6000.6.0f1에서 확인했다.
+- AI용 MCP 커스텀 툴(`bb_asset_graph`, `BBAssetGraphMcpTool.cs`)은 기본으로 꺼져 있다. [MCP for Unity](https://github.com/CoplayDev/unity-mcp) 브리지가 설치된 프로젝트에서 Player Settings의 Scripting Define Symbols에 `ASSETGRAPH_MCP`를 넣으면 켜진다.
 - 네임스페이스가 `BeastBlood.Editor.AssetGraph`로 돼 있다(원 프로젝트에서 추출). 다른 프로젝트에 맞게 바꿔도 동작에는 지장 없다.
 
 ## 기능
@@ -45,8 +46,8 @@
 2. YAML 에셋(.prefab .asset .unity .controller .anim .mat .playable 등)에서 `guid: ` / `GUID: ` 뒤 32자리를 뽑는다.
    `GUID: `는 Addressables `m_AssetGUID`·그룹 엔트리 `m_GUID`를 잡기 위한 것이다. `AssetDatabase.GetDependencies`는 이 문자열 필드를 놓친다.
    `ProjectSettings/*.asset`(Preloaded Assets 등)도 소스로 스캔한다. .meta가 없어 경로를 GUID 자리에 쓰며, 임포트 대상이 아니라 **전체 갱신 때만** 반영된다.
-3. 빌드 설정 씬 이름이 `Assets/01_Scripts`의 C# 문자열 리터럴(`"Title"` 등)로 나오면 코드 경유 선을 만든다.
-4. 파일 I/O는 스레드 풀에서 돌고, 반영은 메인 스레드에서 한다. 이후 변경은 `BBAssetRefPostprocessor`가 임포트 시 파일 단위로 반영한다.
+3. 빌드 설정 씬 이름이 `Assets/` 아래 C# 파일(서드파티 폴더 제외)의 문자열 리터럴(`"Title"` 등)로 나오면 코드 경유 선을 만든다.
+4. 파일 I/O는 스레드 풀(`Task.Run`)에서 돌고, 반영은 메인 스레드에서 한다. 이후 변경은 `BBAssetRefPostprocessor`가 임포트 시 파일 단위로 반영한다.
 
 ## 잡는 것 / 못 잡는 것 (2026-09-15 실측)
 

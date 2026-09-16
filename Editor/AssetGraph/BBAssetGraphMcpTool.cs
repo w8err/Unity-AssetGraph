@@ -1,4 +1,6 @@
-﻿using System;
+﻿// MCP for Unity 브리지가 있는 프로젝트에서만 Scripting Define Symbols에 ASSETGRAPH_MCP를 넣어 켠다
+#if ASSETGRAPH_MCP
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,14 +20,14 @@ namespace BeastBlood.Editor.AssetGraph
     [McpForUnityTool(
         "bb_asset_graph",
         Description =
-            "BeastBlood 에셋 참조 그래프 조회(읽기 전용). action: " +
+            "에셋 참조 그래프 조회(읽기 전용). action: " +
             "refs(대상을 쓰는 에셋, 역참조) | deps(대상이 쓰는 에셋, 정참조) | " +
             "unused(folder 아래 아무도 참조하지 않는 에셋) | missing(프로젝트에 없는 GUID를 가리키는 끊긴 참조) | " +
             "build(백그라운드 전체 갱신, full=true면 캐시 무시) | stats(갱신 진행 여부·규모). " +
             "평소 변경분은 에셋 임포트 시 자동 반영되므로 build는 처음 한 번이면 된다. " +
             "target은 GUID, Assets/ 경로, 파일 이름 모두 가능. " +
             "코드에서 문자열로 부르는 참조는 빌드 씬 이름만 추정(via=code)하며 그 외는 잡지 못한다. " +
-            "상세는 Assets/01_Scripts/Editor/AssetGraph/README.md 참조.",
+            "상세는 https://github.com/w8err/Unity-AssetGraph README 참조.",
         Group = "core")]
     public static class BBAssetGraphMcpTool
     {
@@ -274,3 +276,4 @@ namespace BeastBlood.Editor.AssetGraph
         #endregion Helper
     }
 }
+#endif
