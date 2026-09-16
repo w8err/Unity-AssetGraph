@@ -1,5 +1,7 @@
 # AssetGraph — 에셋 참조 인덱스
 
+![AssetGraph](Documentation~/images/social-preview.png)
+
 **v1.2.0** — UPM 패키지로 배포 (v1.1: UniTask 의존 제거, 코드 스캔 범위를 `Assets/` 전체로)
 
 언리얼 Reference Viewer / Asset Registry의 참조 정보에 해당하는 도구. 유니티에는 "누가 이 에셋을 쓰나"(역참조)를 답하는 기본 기능이 없어서 만들었다.
@@ -22,6 +24,10 @@ UPM 패키지다. 프로젝트의 `Packages/manifest.json`의 `dependencies`에 
 - 네임스페이스가 `BeastBlood.Editor.AssetGraph`로 돼 있다(원 프로젝트에서 추출). 다른 프로젝트에 맞게 바꿔도 동작에는 지장 없다.
 
 ## 기능
+
+![에셋 참조 그래프 창](Documentation~/images/graph-window.png)
+
+왼쪽은 대상을 쓰는 에셋(역참조), 오른쪽은 대상이 쓰는 에셋(정참조)이다. 주황 점선은 C# 문자열 속 씬 이름으로 추정한 연결이다.
 
 - **사람용 에디터 창** `BBAssetGraphWindow`: Project 창에서 에셋 우클릭(또는 상단 `Assets` 메뉴) → `에셋 참조 그래프 보기`. 메뉴 등록은 이것 하나뿐이다.
   (Shortcuts 창의 `Window/Panels/N 에셋 참조 그래프`는 창이 열려 있는 동안 Unity가 자동으로 붙이는 항목이라 없앨 수 없다.)
