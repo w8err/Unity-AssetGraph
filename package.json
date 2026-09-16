@@ -1,0 +1,21 @@
+{
+  "name": "com.w8err.assetgraph",
+  "version": "1.2.0",
+  "displayName": "AssetGraph",
+  "description": "에셋 참조 인덱스와 참조 그래프 창. \"이 에셋을 누가 쓰나\"(역참조)와 \"이 에셋이 무엇을 쓰나\"(정참조)를 보여주고, 미참조·끊긴 참조를 찾는다. Project 창에서 에셋 우클릭 > 에셋 참조 그래프 보기.",
+  "unity": "2021.3",
+  "author": {
+    "name": "w8err",
+    "url": "https://github.com/w8err"
+  },
+  "documentationUrl": "https://github.com/w8err/Unity-AssetGraph",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
+  "keywords": [
+    "asset",
+    "reference",
+    "dependency",
+    "editor"
+  ]
+}

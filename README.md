@@ -1,17 +1,24 @@
 # AssetGraph — 에셋 참조 인덱스
 
-**v1.1** — UniTask 의존 제거, 코드 스캔 범위를 `Assets/` 전체로, MCP 툴은 define으로 켜기
+**v1.2.0** — UPM 패키지로 배포 (v1.1: UniTask 의존 제거, 코드 스캔 범위를 `Assets/` 전체로)
 
 언리얼 Reference Viewer / Asset Registry의 참조 정보에 해당하는 도구. 유니티에는 "누가 이 에셋을 쓰나"(역참조)를 답하는 기본 기능이 없어서 만들었다.
 
 ## 설치
 
-`Editor/AssetGraph` 폴더를 프로젝트의 `Assets/` 아래 아무 곳에나 복사한다. 폴더 이름에 `Editor`가 들어 있어야
-유니티가 에디터 전용 스크립트로 인식한다.
+UPM 패키지다. 프로젝트의 `Packages/manifest.json`의 `dependencies`에 한 줄을 넣는다.
 
-- 의존성은 `com.unity.nuget.newtonsoft-json` 하나다. 보통 다른 Unity 패키지를 통해 이미 들어와 있고, 없으면 Package Manager에서 추가한다.
-- 사람용 에디터 창(`BBAssetGraphWindow`)은 그 외 의존성 없이 바로 동작한다. Unity 6000.6.0f1에서 확인했다.
-- AI용 MCP 커스텀 툴(`bb_asset_graph`, `BBAssetGraphMcpTool.cs`)은 기본으로 꺼져 있다. [MCP for Unity](https://github.com/CoplayDev/unity-mcp) 브리지가 설치된 프로젝트에서 Player Settings의 Scripting Define Symbols에 `ASSETGRAPH_MCP`를 넣으면 켜진다.
+```json
+"com.w8err.assetgraph": "https://github.com/w8err/Unity-AssetGraph.git#v1.2.0"
+```
+
+또는 Package Manager 창 > `+` > `Install package from git URL...`에 `#v1.2.0`까지 붙인 주소를 넣는다.
+`#` 뒤의 태그가 버전이다. 새 버전으로 올릴 때는 이 태그만 바꾼다.
+
+- 의존성 `com.unity.nuget.newtonsoft-json`은 자동으로 설치된다.
+- Unity 6000.6.0f1에서 확인했다. `package.json`의 최소 버전(2021.3)은 C# 9 문법 기준이고 실제로 돌려 보지는 않았다.
+- 패키지 코드는 `Library/PackageCache`에 읽기 전용으로 들어간다. 도구 자체를 고치려면 이 저장소를 clone해 `"file:<clone 경로>"`로 연결한다.
+- AI용 MCP 커스텀 툴(`bb_asset_graph`, `BBAssetGraphMcpTool.cs`)은 [MCP for Unity](https://github.com/CoplayDev/unity-mcp)(`com.coplaydev.unity-mcp`)가 설치된 프로젝트에서만 자동으로 켜진다(asmdef versionDefines → `ASSETGRAPH_MCP`). 없으면 에디터 창만 동작한다.
 - 네임스페이스가 `BeastBlood.Editor.AssetGraph`로 돼 있다(원 프로젝트에서 추출). 다른 프로젝트에 맞게 바꿔도 동작에는 지장 없다.
 
 ## 기능

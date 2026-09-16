@@ -1,0 +1,24 @@
+{
+    "name": "W8err.AssetGraph.Editor",
+    "rootNamespace": "",
+    "references": [
+        "MCPForUnity.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.coplaydev.unity-mcp",
+            "expression": "0.0.0",
+            "define": "ASSETGRAPH_MCP"
+        }
+    ],
+    "noEngineReferences": false
+}

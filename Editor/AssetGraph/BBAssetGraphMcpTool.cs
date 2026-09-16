@@ -1,4 +1,4 @@
-﻿// MCP for Unity 브리지가 있는 프로젝트에서만 Scripting Define Symbols에 ASSETGRAPH_MCP를 넣어 켠다
+﻿// ASSETGRAPH_MCP는 com.coplaydev.unity-mcp 패키지가 설치돼 있으면 asmdef versionDefines가 켠다
 #if ASSETGRAPH_MCP
 using System;
 using System.Collections.Generic;
